@@ -23,10 +23,11 @@ metadata:
 spec:
   request: $(cat user.csr | base64 | tr -d '\n')
   signerName: kubernetes.io/kube-apiserver-client
-  expirationSeconds: 86400  # one day
+  expirationSeconds: ${CERT_EXPIRATION_SECONDS}
   usages:
   - client auth" | kubectl create -f -
 
+echo "CSR created (expriration seconds: ${CERT_EXPIRATION_SECONDS}), waiting for approval..."
 kubectl certificate approve ${K8S_USER}
 
 kubectl describe csr ${K8S_USER}
@@ -64,7 +65,14 @@ else
   echo "Certificate and key match"
 fi
 
-if [[ ! -z "${K8S_TARGET_NAMESPACE}" ]]; then
-  kubectl -n ${K8S_TARGET_NAMESPACE} delete secret ${K8S_USER}-config 2> /dev/null || true
-  kubectl -n ${K8S_TARGET_NAMESPACE} create secret generic ${K8S_USER}-config --from-file=config
+echo "default ns: ${K8S_DEFAULT_NAMESPACE}"
+if [[ ! -z "${K8S_DEFAULT_NAMESPACE}" ]]; then
+  kubectl --kubeconfig config config set-context --current --namespace=${K8S_DEFAULT_NAMESPACE}
+  echo "Default namespace is set to '${K8S_DEFAULT_NAMESPACE}'"
+fi
+
+if [[ ! -z "${K8S_TARGET_NAMESPACE}" ]] && [[ ! -z "${K8S_TARGET_SECRET}" ]]; then
+  kubectl -n ${K8S_TARGET_NAMESPACE} delete secret ${K8S_TARGET_SECRET} 2> /dev/null || true
+  kubectl -n ${K8S_TARGET_NAMESPACE} create secret generic ${K8S_TARGET_SECRET} --from-file=config
+  echo "Secret with kubeconfig stored to secret '${K8S_TARGET_SECRET}' in namespace '${K8S_TARGET_NAMESPACE}'"
 fi

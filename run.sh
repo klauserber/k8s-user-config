@@ -15,6 +15,9 @@ kubectl --kubeconfig kubeconfig -n default run test-user-cert --rm -it \
   --env K8S_SERVER=${K8S_SERVER} \
   --env K8S_CLUSTER_NAME=${K8S_CLUSTER_NAME} \
   --env K8S_TARGET_NAMESPACE=${K8S_TARGET_NAMESPACE} \
+  --env K8S_TARGET_SECRET=${K8S_TARGET_SECRET} \
+  --env K8S_DEFAULT_NAMESPACE=${K8S_DEFAULT_NAMESPACE} \
+  --env CERT_EXPIRATION_SECONDS=${CERT_EXPIRATION_SECONDS} \
   --image ${REGISTRY_NAME}/${IMAGE_NAME}:latest
 
 kubectl --kubeconfig kubeconfig delete -f rbac-testing.yml
