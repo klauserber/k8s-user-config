@@ -11,8 +11,14 @@ if [[ -z "${K8S_USER}" ]]; then
   exit 1
 fi
 
+SUBJECT="/CN=${K8S_USER}"
+
+if [[ ! -z "${ADD_SUBJECT_CONFIG}" ]]; then
+  SUBJECT="${SUBJECT}${ADD_SUBJECT_CONFIG}"
+fi
+
 openssl genrsa -out user.key 2048
-openssl req -new -key user.key -out user.csr -subj "/CN=${K8S_USER}/O=developer"
+openssl req -new -key user.key -out user.csr -subj "${SUBJECT}"
 
 kubectl delete csr ${K8S_USER} || true
 
